@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 const { UniqueConstraintError } = require('sequelize/lib/errors');
 
 /* Register */
-router.post('/signup' , async (req, res) =>{
+router.post('/register' , async (req, res) =>{
     const {username, password} = req.body.user;
     try {
         await models.UserModel.create({
@@ -35,6 +35,45 @@ router.post('/signup' , async (req, res) =>{
     };
 });
 
+/* Login */
+router.post("/login", async (req, res) => {
+    const { username, password } = req.body
+    let message
+    try {
+         const findUser = await User.findOne({ 
+           where :  { username: req.body.username }
+        });
+        //console.log(findUser)
+        if (findUser) {
+          const comparePassword = bcrypt.compare( req.body.password, findUser.password );
+          //console.log(comparePassword)
+          if (comparePassword) {
+            const token = jwt.sign({ id: findUser.id }, process.env.JWT_SECRET, { expiresIn: 60 * 60 * 24 });
+            res.status(201).json({
+                user: user,
+                message: 'Login successful',
+                sessionToken: 'Bearer ${token}'
+            });
+            // message = {
+            //   msg:'Login successful', 
+            //   user: findUser, 
+            //   sessionToken: token          
+            // }
+
+          }
+        } else {
+            res.status(500).json({
+                message: 'Unauthorized',
+            });
+        }
+      } catch (err) {
+        res.status(500).json({
+            message: 'Login failed',
+        });
+      }
+      res.json(message)
+});
+
 /* Get all users */
 router.get('/userinfo', async (req, res) => {
     try {
@@ -52,25 +91,5 @@ router.get('/userinfo', async (req, res) => {
         });
     };
 });
-
-// /* Logout */
-// router.delete('/:uuid', async (req, res) => {
-//     const uuid = req.params.uuid
-//     try {
-//         const user = await models.UserModel.findOne({ where: { uuid } })
-//         .then(await user.destroy() => {
-//                 message = {
-//                   msg: 'Successfully logged out'
-//                 };
-//             });
-//         } catch (err) {
-//                         console.log(err);
-//                         message = {
-//                           msg: 'Logout failed'
-//                         }
-//                     }
-//                     res.json(message)
-                
-//                 });
-        
+       
 module.exports = router;
