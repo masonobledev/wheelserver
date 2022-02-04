@@ -24,7 +24,7 @@ app.use(middleware.validateSession);
 try {
     dbConnection
         .authenticate()
-        .then(async () => await dbConnection.sync(/* {force: true} */))
+        .then(async () => await dbConnection.sync( {force: true} ))
         // force: true will drop all tables in pgAdmin and resync them. This is necessary after you make a change to a model, and need to sync any new table headers to the database.
         .then(() => {
             app.listen(process.env.PORT, () => {

@@ -1,27 +1,30 @@
 const router = require('express').Router();
+// const { carcontroller } = require('.');
 const { models } = require('../models');
 
-router.post('/post', async (req, res) => {
-    const {title, content} = req.body.post;
+router.post('/car', async (req, res) => {
+    const {year, make, model, VIN} = req.body.car;
 
     try{
-        await models.PostsModel.create({
-            title: title,
-            content: content,
+        await models.CarModel.create({
+            year: year,
+            make: make,
+            model: model,
+            VIN: VIN,
             userID: req.user.id
         })
         .then(
-            post => {
+            car => {
                 res.status(201).json({
-                    post: post,
-                    message: 'post created'
+                    car: car,
+                    message: 'vehicle listing created'
                 });
             }
         )
     } catch (err) {
         res.status(201).json({
-            post: this.post,
-            message: 'post created'
+            car: this.car,
+            message: 'vehicle created'
         });
     }
 });

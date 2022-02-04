@@ -52,7 +52,7 @@ router.post("/login", async (req, res) => {
             res.status(201).json({
                 user: user,
                 message: 'Login successful',
-                sessionToken: 'Bearer ${token}'
+                sessionToken: `Bearer ${token}`
             });
             // message = {
             //   msg:'Login successful', 

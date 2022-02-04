@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const { models } = require('../models');
-console.log('test')
 
 router.post('/work', async (req, res) => {
 

@@ -1,5 +1,5 @@
 module.exports = {
-    usercontroller: require('./userscontroller'),
+    usercontroller: require('./usercontroller'),
     carcontroller: require('./carcontroller'),
     workcontroller: require('./workcontroller')
 }
