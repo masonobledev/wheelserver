@@ -8,7 +8,7 @@ const { UniqueConstraintError } = require('sequelize/lib/errors');
 router.post('/register' , async (req, res) =>{
     const {username, password} = req.body.user;
     try {
-        await models.UserModel.create({
+        await models.User.create({
             username: username,
             password: bcrypt.hashSync(password, 10)
         })
@@ -59,19 +59,18 @@ router.post("/login", async (req, res) => {
             //   user: findUser, 
             //   sessionToken: token          
             // }
-
-          }
-        } else {
-            res.status(500).json({
-                message: 'Unauthorized',
-            });
         }
-      } catch (err) {
-        res.status(500).json({
-            message: 'Login failed',
-        });
+      } else {
+          res.status(500).json({
+              message: 'Unauthorized',
+          });
       }
-      res.json(message)
+    } catch (err) {
+      res.status(500).json({
+          message: 'Login failed',
+      });
+    }
+    res.json(message)
 });
 
 /* Get all users */
@@ -91,5 +90,63 @@ router.get('/userinfo', async (req, res) => {
         });
     };
 });
+
+/* Get one user*/
+router.get('/:uuid', async (req, res) => {
+    let message
+    const uuid = req.params.uuid
+
+    try{
+        await models.UserModel.findOne({ where: { uuid } })
+        .then (user => {
+            res.status(201).json({
+                error: `Found user: ${err}`
+            })
+        })
+    } catch (err){
+        res.status(500).json({
+            error: `Failed to retrieve user: ${err}`
+        })
+    }
+});
+
+/* Update User*/
+router.put ('/:uuid', async (req, res) => {
+    let message
+    const uuid = req.params.uuid
+    const { username, role } = req.body
+
+    try{
+        const user = await models.UserModel.findOne({ where: { uuid }});
+        user.username = username
+        user.role = role
+        await user.save()
+        .then (
+            user => {
+                res.status(200).json({
+                    user: user
+                });
+            }
+        )
+    } catch {
+        res.status(500).json({
+            error: `Failed to retrieve user: ${err}`
+        });
+    }
+});
+
+/* Logout */
+  router.delete('/:uuid', async (req, res) => {
+      const uuid = req.params.uuid
+      try{
+          const user = await models.UserModel.findOne({ where: { uuid }});
+          await user.destroy()
+          return
+      } catch (err) {
+        res.status(500).json({
+            error: `Failed to retrieve user: ${err}`
+        });
+      }
+  })
        
 module.exports = router;
