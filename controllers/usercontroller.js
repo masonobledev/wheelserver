@@ -2,15 +2,17 @@ const router = require('express').Router();
 const { models } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const validateJWT = require('../middleware/validate-session');
 const { UniqueConstraintError } = require('sequelize/lib/errors');
 
 /* Register */
-router.post('/register' , async (req, res) =>{
-    const {username, password} = req.body.user;
+router.post('/register', async (req, res) =>{
+    const {username, password, isAdmin} = req.body.user;
     try {
-        await models.User.create({
+        await models.UserModel.create({
             username: username,
-            password: bcrypt.hashSync(password, 10)
+            password: bcrypt.hashSync(password, 10),
+            isAdmin: isAdmin
         })
         .then(
             user => {
@@ -18,7 +20,7 @@ router.post('/register' , async (req, res) =>{
                 res.status(201).json({
                     user: user,
                     message: 'user created',
-                    sessionToken: 'Bearer ${token}'
+                    sessionToken: `Bearer ${token}`
                 });
             }
         )

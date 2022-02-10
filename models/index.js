@@ -12,6 +12,7 @@ CarModel.belongsTo(UserModel);
 CarModel.hasMany(WorkModel);
 
 WorkModel.belongsTo(CarModel);
+CarModel.hasMany(WorkModel);
 
 module.exports = {
     dbConnection: db,

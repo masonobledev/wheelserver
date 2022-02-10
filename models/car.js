@@ -2,14 +2,14 @@ const { DataTypes } = require("sequelize");
 const db = require("../db");
 
 const Car = db.define("car", {
-  id: {
-    type: DataTypes.UUID,
-    primaryKey: true,
-    defaultValue: DataTypes.UUIDV4,
-    allowNull: false,
-  },
+  // id: {
+  //   type: DataTypes.UUID,
+  //   primaryKey: true,
+  //   defaultValue: DataTypes.UUIDV4,
+  //   allowNull: false,
+  // },
   year: {
-    type: DataTypes.NUMBER,
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
   make: {

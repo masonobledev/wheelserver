@@ -1,12 +1,13 @@
 const router = require('express').Router();
 const { models } = require('../models');
+const validateJWT = require('../middleware/validate-session');
 
 /* Create vehicle */
-router.post('/car', async (req, res) => {
+router.post('/car', validateJWT, async (req, res) => {
     const {year, make, model, VIN} = req.body.car;
 
     try{
-        await models.car.create({
+        await models.CarModel.create({
             year: year,
             make: make,
             model: model,
@@ -32,8 +33,8 @@ router.post('/car', async (req, res) => {
 router.get("/", async (req, res) => {
     
     try {
-        await models.car.findAll();
-        .then(
+        await models.CarModel.findAll();
+        then(
             allCars => {
                 res.status(200).json({
                     allCars: allCars
@@ -51,8 +52,8 @@ router.get("/", async (req, res) => {
 router.get("/byid", async (req, res) => {
 
     try{
-        await models.car.findOne({ where: {userid: req.body.userid} });
-        .then(
+        await models.CarModel.findOne({ where: {userid: req.body.userid} });
+        then(
             myCar => {
                 res.status(200).json({
                     myCar: myCar
@@ -73,7 +74,7 @@ router.put("/:uuid", async (req, res) => {
         const { year, make, model, VIN } = req.body
       
         try {
-            const whip = await models.car.findOne({ where: { uuid } });
+            const whip = await models.CarModel.findOne({ where: { uuid } });
         
                 this.whip.year = year
                 this.whip.make = make

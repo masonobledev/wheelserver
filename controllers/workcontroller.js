@@ -1,7 +1,8 @@
 const router = require('express').Router();
+const validateJWT = require('../middleware/validate-session');
 const { models } = require('../models');
 
-router.post('/work', async (req, res) => {
+router.post('/work', validateJWT, async (req, res) => {
 
     const {date, mileage, notes, carID} = req.body.work;
 
@@ -11,7 +12,7 @@ router.post('/work', async (req, res) => {
             mileage: mileage,
             notes: notes,
             carID: carID,
-            userID: req.user.id
+            // userID: req.user.id
         })
         .then(
             comment => {
