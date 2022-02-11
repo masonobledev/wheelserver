@@ -2,29 +2,29 @@ const router = require('express').Router();
 const { models } = require('../models');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const validateJWT = require('../middleware/validate-session');
 const { UniqueConstraintError } = require('sequelize/lib/errors');
 
 /* Register */
 router.post('/register', async (req, res) =>{
-    const {username, password, isAdmin} = req.body.user;
+    const {username, password, isAdmin} = req.body;
+
     try {
-        await models.UserModel.create({
-            username: username,
+        const newUser = await models.UserModel.create({
+            username, 
             password: bcrypt.hashSync(password, 10),
-            isAdmin: isAdmin
+            isAdmin
         })
-        .then(
-            user => {
-                let token = jwt.sign({id: user.id}, process.env.JWT_SECRET, {expiresIn: 60*60*24});
-                res.status(201).json({
-                    user: user,
-                    message: 'user created',
-                    sessionToken: `Bearer ${token}`
-                });
-            }
-        )
+        console.log(newUser);
+
+        let token = jwt.sign({id: newUser.id}, process.env.JWT_SECRET, {expiresIn: 60*60*24});
+
+        res.status(201).json({
+            message: 'User Created!',
+            user: newUser,
+            sessionToken: token
+        })
     } catch (err) {
+        console.log(err);
         if (err instanceof UniqueConstraintError) {
             res.status(409).json({ 
                 message: 'Username already in use'
@@ -39,28 +39,26 @@ router.post('/register', async (req, res) =>{
 
 /* Login */
 router.post("/login", async (req, res) => {
-    const { username, password } = req.body
-    let message
+    const { username, password, isAdmin } = req.body;
+    
     try {
-         const findUser = await User.findOne({ 
+         const findUser = await models.UserModel.findOne({ 
            where :  { username: req.body.username }
         });
-        //console.log(findUser)
+        console.log(findUser)
+
         if (findUser) {
-          const comparePassword = bcrypt.compare( req.body.password, findUser.password );
-          //console.log(comparePassword)
+          const comparePassword = bcrypt.compare( password, findUser.password );
+          console.log(comparePassword)
+
           if (comparePassword) {
-            const token = jwt.sign({ id: findUser.id }, process.env.JWT_SECRET, { expiresIn: 60 * 60 * 24 });
+            const token = jwt.sign({ id: findUser.id }, process.env.JWT_SECRET, {expiresIn: 60*60*24});
+            
             res.status(201).json({
-                user: user,
+                user: findUser,
                 message: 'Login successful',
                 sessionToken: `Bearer ${token}`
             });
-            // message = {
-            //   msg:'Login successful', 
-            //   user: findUser, 
-            //   sessionToken: token          
-            // }
         }
       } else {
           res.status(500).json({
@@ -72,17 +70,17 @@ router.post("/login", async (req, res) => {
           message: 'Login failed',
       });
     }
-    res.json(message)
 });
 
 /* Get all users */
-router.get('/userinfo', async (req, res) => {
+router.get('/allusers', async (req, res) => {
     try {
         await models.UserModel.findAll()
         .then(
             users => {
                 res.status(200).json({
-                    users: users
+                    users: users,
+                    message: "Success"
                 });
             }
         )
@@ -94,45 +92,47 @@ router.get('/userinfo', async (req, res) => {
 });
 
 /* Get one user*/
-router.get('/:uuid', async (req, res) => {
-    let message
-    const uuid = req.params.uuid
-
+router.get('/:id', async (req, res) => {
+    const { id, username, password } = req.body
+    
     try{
-        await models.UserModel.findOne({ where: { uuid } })
-        .then (user => {
+        const oneUser = await models.UserModel.findOne({ 
+            where: { id: id } 
+        });
+        console.log(oneUser);
+
             res.status(201).json({
-                error: `Found user: ${err}`
+                user: oneUser,
+                message: "Found user"
+            });
+        } catch (err) {
+            res.status(500).json({
+                error: `Failed to retrieve user: ${err}`
             })
-        })
-    } catch (err){
-        res.status(500).json({
-            error: `Failed to retrieve user: ${err}`
-        })
     }
 });
 
 /* Update User*/
-router.put ('/:uuid', async (req, res) => {
-    let message
-    const uuid = req.params.uuid
-    const { username, role } = req.body
+router.put ('/:id', async (req, res) => {
+    const { id, username, password } = req.body
 
     try{
-        const user = await models.UserModel.findOne({ where: { uuid }});
-        user.username = username
-        user.role = role
-        await user.save()
-        .then (
-            user => {
+        const updateUser = await models.UserModel.findOne({ 
+            where: { id: id }
+        });
+        console.log(updateUser);
+
+        updateUser.username = username
+
+        await models.UserModel.save();
+
                 res.status(200).json({
-                    user: user
+                    user: updateUser,
+                    message: "Success"
                 });
-            }
-        )
-    } catch {
+    } catch (err) {
         res.status(500).json({
-            error: `Failed to retrieve user: ${err}`
+            error: /*`Failed to retrieve user: ${err}`*/ "Failed to update user"
         });
     }
 });
@@ -146,7 +146,7 @@ router.put ('/:uuid', async (req, res) => {
           return
       } catch (err) {
         res.status(500).json({
-            error: `Failed to retrieve user: ${err}`
+            message: "Failed to update user"
         });
       }
   })

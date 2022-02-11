@@ -17,14 +17,15 @@ app.use(express.json());
 app.use('/auth', controllers.usercontroller);
 app.use('/car', controllers.carcontroller);
 app.use('/work', controllers.workcontroller);
-app.use(middleware.validateSession);
+//app.use(middleware.validateSession);
 
 //database auth & sync
 //testing the connection
 try {
     dbConnection
         .authenticate()
-        .then(async () => await dbConnection.sync( {force: true} ))
+        .then(async () => await dbConnection.sync())
+        //.then(async () => await dbConnection.sync( {force: true} ))
         // force: true will drop all tables in pgAdmin and resync them. This is necessary after you make a change to a model, and need to sync any new table headers to the database.
         .then(() => {
             app.listen(process.env.PORT, () => {

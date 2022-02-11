@@ -22,5 +22,3 @@ module.exports = {
         WorkModel
     }
 };
-
-module.exports = db;
