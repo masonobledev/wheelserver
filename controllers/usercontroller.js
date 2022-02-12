@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const { models } = require('../models');
 const bcrypt = require('bcryptjs');
+const validateJWT = require('../middleware/validate-session');
 const jwt = require('jsonwebtoken');
 const { UniqueConstraintError } = require('sequelize/lib/errors');
 
@@ -123,7 +124,8 @@ router.put ('/:id', async (req, res) => {
         console.log(updateUser);
 
         updateUser.username = username
-
+        updateUser.password = password
+        
         await models.UserModel.save();
 
                 res.status(200).json({
@@ -138,17 +140,25 @@ router.put ('/:id', async (req, res) => {
 });
 
 /* Logout */
-  router.delete('/:uuid', async (req, res) => {
-      const uuid = req.params.uuid
+  router.delete('/:id', validateJWT, async (req, res) => {
+      const id = req.body.id
+
       try{
-          const user = await models.UserModel.findOne({ where: { uuid }});
-          await user.destroy()
-          return
+          const deleteUser = await models.UserModel.findOne({ 
+              where: { id: id }
+            });
+
+          await models.UserModel.destroy()
+          
+          res.status(201).json({
+              user: deleteUser,
+              message: 'Success'
+          });
       } catch (err) {
-        res.status(500).json({
-            message: "Failed to update user"
-        });
+            res.status(500).json({
+            message: "Failed to update user",
+            });
       }
-  })
+  });
        
 module.exports = router;

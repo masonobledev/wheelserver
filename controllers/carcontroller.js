@@ -1,33 +1,48 @@
 const router = require('express').Router();
 const { models } = require('../models');
 const validateJWT = require('../middleware/validate-session');
+const { user } = require('pg/lib/defaults');
 
 /* Create vehicle */
-router.post('/car', validateJWT, async (req, res) => {
+router.post('/new', validateJWT, async (req, res) => {
     const {year, make, model, VIN} = req.body.car;
+    const { id } = req.user;
 
     try{
-        await models.CarModel.create({
-            year: year,
-            make: make,
-            model: model,
-            VIN: VIN,
-            userID: req.user.id
-        })
-        .then(
-            car => {
+        const existingUser = await models.UserModel.findOne({ 
+             where: { id }
+         });
+        console.log(existingUser)
+        
+         if (existingUser) {
+             const newCar = await models.CarModel.create({
+                 year: year,
+                 make: make,
+                 model: model,
+                 VIN: VIN,
+                 userID: existingUser.id
+                });
+                
                 res.status(201).json({
-                    car: car,
+                    car: newCar,
                     message: 'Shiny new car!'
                 });
+
+            } else {
+                res.status(500).json({
+                    message: 'Unauthorized',
+                });
             }
-        )
-    } catch (err) {
-        res.status(500).json({
-            message: 'try again!'
-        });
-    }
-});
+
+            } catch (err) {
+            res.status(500).json({
+                message: 'try again!'
+            });
+        }
+    });
+            
+        
+
 
 /* Get all cars */
 router.get("/", async (req, res) => {
