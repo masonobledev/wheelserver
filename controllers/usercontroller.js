@@ -5,7 +5,7 @@ const validateJWT = require('../middleware/validate-session');
 const jwt = require('jsonwebtoken');
 const { UniqueConstraintError } = require('sequelize/lib/errors');
 
-/* Register */
+/* Register==========================================================================*/
 router.post('/register', async (req, res) =>{
     const {username, password, isAdmin} = req.body;
 
@@ -38,7 +38,7 @@ router.post('/register', async (req, res) =>{
     };
 });
 
-/* Login */
+/* Login=============================================================================*/
 router.post("/login", async (req, res) => {
     const { username, password, isAdmin } = req.body;
     
@@ -73,7 +73,7 @@ router.post("/login", async (req, res) => {
     }
 });
 
-/* Get all users */
+/* Get all users=====================================================================*/
 router.get('/allusers', async (req, res) => {
     try {
         await models.UserModel.findAll()
@@ -92,7 +92,7 @@ router.get('/allusers', async (req, res) => {
     };
 });
 
-/* Get one user*/
+/* Get one user======================================================================*/
 router.get('/:id', async (req, res) => {
     const { id, username, password } = req.body
     
@@ -113,8 +113,8 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-/* Update User*/
-router.put ('/:id', async (req, res) => {
+/* Update User=======================================================================*/
+router.put ('/update', async (req, res) => {
     const { id, username, password } = req.body
 
     try{
@@ -126,7 +126,7 @@ router.put ('/:id', async (req, res) => {
         updateUser.username = username
         updateUser.password = password
         
-        await models.UserModel.save();
+        await updateUser.save();
 
                 res.status(200).json({
                     user: updateUser,
@@ -134,29 +134,33 @@ router.put ('/:id', async (req, res) => {
                 });
     } catch (err) {
         res.status(500).json({
-            error: /*`Failed to retrieve user: ${err}`*/ "Failed to update user"
+            error: "Failed to update user"
         });
     }
 });
 
-/* Logout */
-  router.delete('/:id', validateJWT, async (req, res) => {
-      const id = req.body.id
+/* Logout============================================================================*/
+  router.delete('/logout', async (req, res) => {
+
+    const { id /*sessionToken*/ } = req;
 
       try{
           const deleteUser = await models.UserModel.findOne({ 
               where: { id: id }
             });
 
-          await models.UserModel.destroy()
-          
-          res.status(201).json({
-              user: deleteUser,
-              message: 'Success'
-          });
+        if (id /*&& sessionToken*/){
+            await models.UserModel.destroy();
+        };
+                
+           res.status(201).json({
+            user: deleteUser,
+            message: 'Success'
+        });
+
       } catch (err) {
-            res.status(500).json({
-            message: "Failed to update user",
+            res.status(400).json({
+            message: "not authenticated",
             });
       }
   });

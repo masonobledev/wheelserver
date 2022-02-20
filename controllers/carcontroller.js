@@ -1,50 +1,73 @@
 const router = require('express').Router();
 const { models } = require('../models');
 const validateJWT = require('../middleware/validate-session');
-const { user } = require('pg/lib/defaults');
+const res = require('express/lib/response');
+const Car = require('../models/car');
 
+/* Create vehicle================================================= */
+// router.post('/new', async (req, res) => {
+
+//     const { userId, body } = req.body
+
+//     try{
+//         await models.UserModel.findOne({ where: { id: userId } })
+//         await models.CarModel.create({ body, userId: id })
+//         .then(
+//             // car => {
+//             newCar => {    
+//                 res.status(201).json({
+//                     car: newCar,
+//                     message: `success`
+//                 });
+//             }
+//         )
+//     } catch (err) {
+//         res.status(500).json({
+//             message: `unsuccessful`
+//         });
+
+//     }
+// });
+/*=========================================================================*/
 /* Create vehicle */
-router.post('/new', validateJWT, async (req, res) => {
-    const {year, make, model, VIN} = req.body.car;
-    const { id } = req.user;
+// router.post("/new", validateJWT, async (req, res) => {
+//     const { year, make, model, VIN } = req.body.cars;
+//     const userId = req.params.id;
 
-    try{
-        const existingUser = await models.UserModel.findOne({ 
-             where: { id }
-         });
-        console.log(existingUser)
-        
-         if (existingUser) {
-             const newCar = await models.CarModel.create({
-                 year: year,
-                 make: make,
-                 model: model,
-                 VIN: VIN,
-                 userID: existingUser.id
-                });
-                
-                res.status(201).json({
-                    car: newCar,
-                    message: 'Shiny new car!'
-                });
-
-            } else {
-                res.status(500).json({
-                    message: 'Unauthorized',
-                });
-            }
-
-            } catch (err) {
-            res.status(500).json({
-                message: 'try again!'
-            });
-        }
-    });
-            
-        
-
-
-/* Get all cars */
+//     try{
+//         await models.UserModel.findOne({ where: {id: userId} });
+//         await models.CarModel.create({
+//             year,
+//             make,
+//             model,
+//             VIN,
+//             userId,
+//         }).then((post) => {
+//                 res.status(201).json({
+//                     post: post,
+//                     message: 'new vehicle listing!'
+//                 });
+//             }
+//         );
+//     } catch (err) {
+//         res.status(500).json({
+//             error: 'Sorry--try again!'
+//         });
+//     }
+// });
+/* Create vehicle==========================================================*/
+router.post('/new', validateJWT, (req, res) => {
+    const newCar = {
+        year: req.body.CarModel.year,
+        make: req.body.CarModel.make,
+        model: req.body.CarModel.model,
+        VIN: req.body.CarModel.VIN
+    };
+    models.CarModel.create(newCar)
+    .then((CarModel) => res.status(200).json(CarModel))
+    .catch((err) => res.status(500).json({ error: err }));
+})
+/* Get all cars============================================================*/
 router.get("/", async (req, res) => {
     
     try {
@@ -52,7 +75,8 @@ router.get("/", async (req, res) => {
         then(
             allCars => {
                 res.status(200).json({
-                    allCars: allCars
+                    allCars: allCars,
+                    message: "Success"
                 });
             }
         )
@@ -63,11 +87,11 @@ router.get("/", async (req, res) => {
     }
 });
 
-/* Get car by id */
-router.get("/byid", async (req, res) => {
+/* Get car by id============================================================*/
+router.get("/:id", /*validateJWT*/ async (req, res) => {
 
     try{
-        await models.CarModel.findOne({ where: {userid: req.body.userid} });
+        await models.CarModel.findOne({ where: { userid: req.body.userid } });
         then(
             myCar => {
                 res.status(200).json({
@@ -82,7 +106,7 @@ router.get("/byid", async (req, res) => {
     }
 });
 
-/* Update vehicle */
+/* Update vehicle===============================================================*/
 router.put("/:uuid", async (req, res) => {
     
         const uuid = req.params.uuid

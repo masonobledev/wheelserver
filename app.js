@@ -17,7 +17,7 @@ app.use(express.json());
 app.use('/auth', controllers.usercontroller);
 app.use('/car', controllers.carcontroller);
 app.use('/work', controllers.workcontroller);
-//app.use(middleware.validateSession);
+app.use(middleware.validateSession);
 
 //database auth & sync
 //testing the connection
