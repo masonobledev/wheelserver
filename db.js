@@ -1,14 +1,7 @@
 const { Sequelize } = require('sequelize');
 //Option 3: Passing parameters separately
-const sequelize = new Sequelize(
-    // process.env.DATABASE_NAME,
-    // process.env.DATABASE_USERNAME,
-    // process.env.DATABASE_PASSWORD,
-    // {
-    //     host: process.env.DATABASE_HOST,
-    //     dialect: process.env.DATABASE_DIALECT
-    // }
-    process.env.DATABASE_URL, {
+const sequelize = new Sequelize('wheel', 'postgres', 'admin', {
+        host: 'localhost',
         dialect: 'postgres',
     })
 

@@ -2,6 +2,7 @@ require('dotenv').config();
 
 // imports
 const express = require('express');
+const cors = require('cors');
 const dbConnection = require('./db');
 const controllers = require('./controllers');
 const middleware = require('./middleware');
@@ -9,14 +10,22 @@ const middleware = require('./middleware');
 //instantiation
 const app = express();
 
+const corsOptions = {
+    origin: '*',
+    optionsSuccessStatus: 200
+  }
+
 //middleware
-app.use(middleware.CORS);
+app.use(cors(corsOptions));
 app.use(express.json());
+
+
 
 //endpoints
 app.use('/auth', controllers.usercontroller);
 app.use('/car', controllers.carcontroller);
 app.use('/work', controllers.workcontroller);
+app.use('/user', controllers.usercontroller);
 app.use(middleware.validateSession);
 
 //database auth & sync

@@ -70,16 +70,13 @@ router.post('/new', validateJWT, (req, res) => {
 /* Get all cars============================================================*/
 router.get("/", async (req, res) => {
     
+    //const cars = await models.CarModel.findAll();
     try {
-        await models.CarModel.findAll();
-        then(
-            allCars => {
-                res.status(200).json({
-                    allCars: allCars,
-                    message: "Success"
-                });
-            }
-        )
+        const cars = await models.CarModel.findAll();
+        res.status(200).json({
+            allCars: cars,
+            message: "Success"
+        });
     } catch (err) {
         res.status(500).json({
             message: 'try again!'
@@ -91,14 +88,18 @@ router.get("/", async (req, res) => {
 router.get("/:id", /*validateJWT*/ async (req, res) => {
 
     try{
-        await models.CarModel.findOne({ where: { userid: req.body.userid } });
-        then(
-            myCar => {
-                res.status(200).json({
-                    myCar: myCar
-                });
-            }
-        );
+        var car = await models.CarModel.findOne({ where: { id: req.body.id } });
+        res.status(200).json({
+            myCar: car,
+            message: "Success"
+        });
+        // then(
+        //     myCar => {
+        //         res.status(200).json({
+        //             myCar: myCar
+        //         });
+        //     }
+        // );
     } catch (err) {
         res.status(500).json({
             message: 'nope!'
